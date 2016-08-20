@@ -1,9 +1,10 @@
 #! /bin/bash
 #
 # This script checks whether mount points are mounted:
-# It looks for the presence of a .mntchkfile (configuratble) in root of the
+#
+# It looks for the presence of a `.mntchkfile` (configuratble) in root of the
 # provided (arguments) mount point targets. It only deems the targets mounted
-# when it finds the file. Otherwise it will stricktly exit with an errorcode.
+# when it finds the file. Otherwise it *stricktly* exits with an errorcode.
 #
 # Copyright 2016 Willem Oosting
 #
