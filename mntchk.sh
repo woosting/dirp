@@ -1,88 +1,67 @@
 #! /bin/bash
 #
-# Script to determine whether mounts are present for backups.
+# This script checks whether mount points are mounted:
+# It looks for the presence of a .mntchkfile (configuratble) in root of the
+# provided (arguments) mount point targets. It only deems the targets mounted
+# when it finds the file. Otherwise it will stricktly exit with an errorcode.
 #
-# VERSION:
-#          0.03 - 2016/08/20
-#          - Added explicit check for thie existence of an .mntchkfile
-#          - Taking in arguments as mountpoints to check.
-#          0.02 - 2016/06/03
-#          - Made backups mount generic
-#          - Added FAYNTIC to the list
-#          - Added version history contents
-#          - Removed AYA from the list
-#          0.01
-#          - First opreational version
-
-# CONFIG
-
-MOUNTS=( "$@" )
-#  MOUNTS[0]="/mnt/backups"
-#  MOUNTS[1]="/mnt/backups-offsite"
-#  MOUNTS[2]="/mnt/ch3snas"
-#  MOUNTS[3]="/mnt/fayntic"
+# Copyright 2016 Willem Oosting
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# FORK ME AT GITHUB: https://github.com/woosting/mntchk
 
 
-# VARIABLES
+# CONFIGURATION:
+  MNTCHKFILE=".mntchkfile"  # The `mount check file` to detect.
+  ERROR='\033[0;31m'        # Error status color (default: red)
+  READY='\033[0;32m'        # Ready status color (default: green)
 
-  MNTCHKFILE=".mntchkfile"
+# INITIALISATION:
+  MOUNTS=( "$@" )
   MOUNTSFOUND=0
+  RC='\033[0m'
 
-  # color definitions
-  # syntax: echo -e "\033[1;32m\033[44m test \033[0m"
-  #                  foreground backgr       reset
-  RED='\033[0;31m'
-  GREEN='\033[0;32m'
-  RC='\033[0m' # Reset color
-
-
-# FUNCTIONS 
-
-  function mntchk() {
+# FUNCTION DEFINITION:
+  function mntchker() {
     if [ -f ${1}/${MNTCHKFILE} ]
       then
-      	echo -e "${GREEN}[x]$RC $1"
+      	echo -e "${READY}[x]$RC $1"
       	MOUNTSFOUND=$((MOUNTSFOUND + 1))
       else
-      	echo -e "$RED[!]$RC $1"
+      	echo -e "${ERROR}[!]$RC $1"
+    fi
+  }
+  function resultHandler() {
+    echo -e "";
+    if [ ${MOUNTSFOUND} ==  ${#MOUNTS[@]} ]
+      then
+        exit 0;
     fi
   }
 
 
-# EXECUTION LOGIC
-
+# LOGIC EXECUTION:
 if [ ${#MOUNTS[@]} -ge 1 ]
   then
-    echo -e "\nMount availability checking...\n"
+    echo -e "Checking..."
     for i in ${MOUNTS[*]}; do
-      mntchk $i
+      mntchker $i
     done
-    echo "";
-
-    if [ ${MOUNTSFOUND} !=  ${#MOUNTS[@]} ]
-      then
-        echo -e "MOUNTS NOT ALL READY!${RC}\n"
-        exit 1;
-      else
-        echo -e "Mounts all ready.\n"
-    fi
   else
-    echo -e "\nERROR: Please supply at least one argument (mount point)!\n"
+    echo -e "NOTHING TO CHECK: Please supply at least one mount point (argument) to check!\n"
     exit 1;
 fi
-
-
-# LEGACY
-#
-#  echo "-/mnt/backups"
-#  ls /mnt/backups/;
-#  echo ""
-#  echo "-/mnt/backups-offsite"
-#  ls /mnt/backups-offsite/;
-#  echo ""
-#  echo "-/mnt/ch3snas"
-#  ls /mnt/ch3snas/;
-#  echo ""
-#  echo "-/mnt/fayntic"
-#  ls /mnt/fayntic/;
-#  echo ""
+resultHandler
+exit 1;
