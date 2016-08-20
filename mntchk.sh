@@ -5,6 +5,7 @@
 # VERSION:
 #          0.03 - 2016/08/20
 #          - Added explicit check for thie existence of an .mntchkfile
+#          - Taking in arguments as mountpoints to check.
 #          0.02 - 2016/06/03
 #          - Made backups mount generic
 #          - Added FAYNTIC to the list
@@ -15,10 +16,11 @@
 
 # CONFIG
 
-  MOUNTS[0]="/mnt/backups/"
-  MOUNTS[1]="/mnt/backups-offsite/"
-  MOUNTS[2]="/mnt/ch3snas/"
-  MOUNTS[3]="/mnt/fayntic/"
+MOUNTS=( "$@" )
+#  MOUNTS[0]="/mnt/backups"
+#  MOUNTS[1]="/mnt/backups-offsite"
+#  MOUNTS[2]="/mnt/ch3snas"
+#  MOUNTS[3]="/mnt/fayntic"
 
 
 # VARIABLES
@@ -37,33 +39,41 @@
 # FUNCTIONS 
 
   function mntchk() {
-    if [ -f ${1}${MNTCHKFILE} ]
+    if [ -f ${1}/${MNTCHKFILE} ]
       then
-	echo -e "${GREEN}[x]$RC $1"
-	MOUNTSFOUND=$((MOUNTSFOUND + 1))
+      	echo -e "${GREEN}[x]$RC $1"
+      	MOUNTSFOUND=$((MOUNTSFOUND + 1))
       else
-	echo -e "$RED[!]$RC $1"
+      	echo -e "$RED[!]$RC $1"
     fi
   }
 
+
 # EXECUTION LOGIC
 
-  echo -e "\nMount availability checking...\n"
-  for i in ${MOUNTS[*]}; do
-    mntchk $i
-  done
-  echo "";
+if [ ${#MOUNTS[@]} -ge 1 ]
+  then
+    echo -e "\nMount availability checking...\n"
+    for i in ${MOUNTS[*]}; do
+      mntchk $i
+    done
+    echo "";
 
-  if [ ${MOUNTSFOUND} !=  ${#MOUNTS[@]} ]
-    then
-      echo -e "MOUNTS NOT ALL READY!${RC}\n"
-      exit 1;
-    else
-      echo -e "Mounts all ready.\n"
-  fi
+    if [ ${MOUNTSFOUND} !=  ${#MOUNTS[@]} ]
+      then
+        echo -e "MOUNTS NOT ALL READY!${RC}\n"
+        exit 1;
+      else
+        echo -e "Mounts all ready.\n"
+    fi
+  else
+    echo -e "\nERROR: Please supply at least one argument (mount point)!\n"
+    exit 1;
+fi
+
 
 # LEGACY
-
+#
 #  echo "-/mnt/backups"
 #  ls /mnt/backups/;
 #  echo ""
