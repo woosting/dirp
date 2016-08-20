@@ -56,7 +56,7 @@
 # LOGIC EXECUTION:
 if [ ${#MOUNTS[@]} -ge 1 ]
   then
-    echo -e "Checking..."
+    echo -e "Checking mount points..."
     for i in ${MOUNTS[*]}; do
       mntchker $i
     done
