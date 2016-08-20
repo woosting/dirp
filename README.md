@@ -1,10 +1,11 @@
-# mntchk
+# dirchk
 
-This script checks whether mount points are mounted:
+This script checks whether directories are accessible.
 
-It looks for the presence of a `.mntchkfile` (configuratble) in root of the
-provided (arguments) mount point targets. It only deems the targets mounted
-when it finds the file. Otherwise it *stricktly* exits with an errorcode.
+It looks for a `.dirchkfile` (configurable) in each provided (arguments)
+path and marks each path's accesibility based on whether the file was found
+or not. When one of the paths was deemed inaccesible the exit status is
+restrictively set accordingly (e.g. for followup script to verify).
 
 Copyright 2016 Willem Oosting
 
@@ -21,4 +22,4 @@ Copyright 2016 Willem Oosting
 >You should have received a copy of the GNU General Public License
 >along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-FORK ME AT GITHUB: https://github.com/woosting/mntchk
+FORK ME AT GITHUB: https://github.com/woosting/dirchk

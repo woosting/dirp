@@ -1,10 +1,11 @@
 #! /bin/bash
 #
-# This script checks whether directories are accessible (or present).
-# It looks for a `.dirchkfile` (configurable) in the root of each provided
-# path (arguments) and marks the pahts with an [x] (accessible) when it is
-# found. Otherwise it is marked with a [!] (not accessible) and the script
-# exits with an errorstatus of "1".
+# This script checks whether directories are accessible.
+#
+# It looks for a `.dirchkfile` (configurable) in each provided (arguments)
+# path and marks each path's accesibility based on whether the file was found
+# or not. When one of the paths was deemed inaccesible the exit status is
+# restrictively set accordingly (e.g. for followup script to verify).
 #
 # Copyright 2016 Willem Oosting
 #
