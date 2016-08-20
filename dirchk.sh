@@ -5,7 +5,7 @@
 # It looks for a `.dirchkfile` (configurable) in each provided (arguments)
 # path and marks each path's accesibility based on whether the file was found
 # or not. When one of the paths was deemed inaccesible the exit status is
-# restrictively set accordingly (e.g. for followup script to verify).
+# restrictively set accordingly (e.g. for followup script to use).
 #
 # Copyright 2016 Willem Oosting
 #
