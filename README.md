@@ -1,11 +1,9 @@
-# dirchk
+# DIRP (DIRectory Permissions checker)
 
-This script checks whether directories are accessible.
-
-It looks for a `.dirchkfile` (configurable) in each provided (arguments)
-path and marks each path's accesibility based on whether the file was found
-or not. When one of the paths was deemed inaccesible the exit status is
-restrictively set accordingly (e.g. for followup script to use).
+This script checks directory permissions for a series of provided paths
+(arguments). It marks each path individually for having met a criterium
+(configurable) or not. *One* directroy not passing the checks renders the
+final result `FAILED` (setting the script's exit status accordingly).
 
 Copyright 2016 Willem Oosting
 
@@ -22,4 +20,4 @@ Copyright 2016 Willem Oosting
 >You should have received a copy of the GNU General Public License
 >along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-FORK ME AT GITHUB: https://github.com/woosting/dirchk
+FORK ME AT GITHUB: https://github.com/woosting/dirp
