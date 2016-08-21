@@ -1,0 +1,6 @@
+{
+  "name": "Dirp",
+  "tagline": "Directory series Permission checker",
+  "body": "# DIRectory series Permission checker (DIRP)\r\n\r\nThis script checks directory permissions for a series of provided paths\r\n(arguments). It marks each path individually for having met a criterium\r\n(configurable) or not. *One* directroy not passing the checks renders the\r\nfinal result `FAILED` (setting the script's exit status accordingly).\r\n\r\nCopyright 2016 Willem Oosting\r\n\r\n>This program is free software: you can redistribute it and/or modify\r\n>it under the terms of the GNU General Public License as published by\r\n>the Free Software Foundation, either version 3 of the License, or\r\n>(at your option) any later version.\r\n>\r\n>This program is distributed in the hope that it will be useful,\r\n>but WITHOUT ANY WARRANTY; without even the implied warranty of\r\n>MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\r\n>GNU General Public License for more details.\r\n>\r\n>You should have received a copy of the GNU General Public License\r\n>along with this program.  If not, see <http://www.gnu.org/licenses/>.",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
