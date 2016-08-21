@@ -34,10 +34,9 @@
   RCOL='\033[0m'      #RESET color (default: terminal default)
 
 
-  # INITIALISATION:
+# INITIALISATION:
 
   DIRS2CHK=( "$@" )
-  MYPERM=0
   DIRSOK=0
 
 
@@ -53,15 +52,11 @@
         exit 1;
     fi
   }
-  function determMyperm() {
+  function chkDir() {
+    MYPERM=0
     test -r $1 && MYPERM=$((MYPERM + 4))
     test -w $1 && MYPERM=$((MYPERM + 2))
     test -x $1 && MYPERM=$((MYPERM + 1))
-#    echo ${MYPERM} #DEBUGGING
-#    MYPERM=7       #DEBUGGING
-  }
-  function chkDir() {
-    determMyperm $1
     if [ ${MYPERM} -ge ${CRITLVL} ]
       then
         echo -e "${OKCOL}[x]$RCOL $1"
@@ -90,4 +85,3 @@
   done
   resultHandler
   exit 1;
-
