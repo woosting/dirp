@@ -53,15 +53,10 @@
         exit 1;
     fi
   }
-  function determMyperm() {
+  function chkDir() {
     test -r $1 && MYPERM=$((MYPERM + 4))
     test -w $1 && MYPERM=$((MYPERM + 2))
     test -x $1 && MYPERM=$((MYPERM + 1))
-#    echo ${MYPERM} #DEBUGGING
-#    MYPERM=7       #DEBUGGING
-  }
-  function chkDir() {
-    determMyperm $1
     if [ ${MYPERM} -ge ${CRITLVL} ]
       then
         echo -e "${OKCOL}[x]$RCOL $1"
@@ -69,6 +64,7 @@
       else
         echo -e "${NOKCOL}[!]$RCOL $1"
     fi
+    MYPERM=0
   }
   function resultHandler() {
     if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
