@@ -1,4 +1,4 @@
-# DIRP (DIRectory Permissions checker)
+# DIRectory series Permission checker (DIRP)
 
 This script checks directory permissions for a series of provided paths
 (arguments). It marks each path individually for having met a criterium
