@@ -27,7 +27,7 @@
 
 # CONFIGURATION:
 
-  CRITLVL=7           #Cumulatively: read=4 write=2 execute=1
+  PERMCRIT=7          #Cumulatively: read=4 write=2 execute=1
   EMCOL='\033[1m'     #EMPHASIS color (default: BOLD)
   NOKCOL='\033[0;31m' #NOT OK color (default: RED)
   OKCOL='\033[0;32m'  #OK color (default: GREEN)
@@ -52,12 +52,22 @@
         exit 1;
     fi
   }
+  function calcPerm() {
+    PERM=0
+    test -r $1 && PERM=$((PERM + 4))
+    test -w $1 && PERM=$((PERM + 2))
+    test -x $1 && PERM=$((PERM + 1))
+  }
+  function chkPerm() {
+    if [ ${PERM} -ge ${PERMCRIT} ]
+      then
+        PERMCHECK=1
+      else
+        PERMCHECK=0
+    fi
+  }
   function chkDir() {
-    MYPERM=0
-    test -r $1 && MYPERM=$((MYPERM + 4))
-    test -w $1 && MYPERM=$((MYPERM + 2))
-    test -x $1 && MYPERM=$((MYPERM + 1))
-    if [ ${MYPERM} -ge ${CRITLVL} ]
+    if [ ${PERMCHECK} == 1 ]
       then
         echo -e "${OKCOL}[x]$RCOL $1"
         DIRSOK=$((DIRSOK + 1))
@@ -68,10 +78,10 @@
   function resultHandler() {
     if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
       then
-        echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${CRITLVL}."
+        echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${PERMCRIT}."
         exit 0;
       else
-        echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${CRITLVL}!"
+        echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${PERMCRIT}!"
         exit 1;
     fi
   }
@@ -81,6 +91,8 @@
 
   checkInput
   for i in ${DIRS2CHK[*]}; do
+    calcPerm $i
+    chkPerm $i
     chkDir $i
   done
   resultHandler
