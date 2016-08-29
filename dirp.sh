@@ -29,26 +29,22 @@
 
 
 # INITIALISATION:
+  DIRECTORIES=()
+  DIRSOK=0                      #DEFAULT   (strict)
+  PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
+  DIRPERMS="NOK"
 
-  # STATICS
+  while getopts r:w: option     #CL-INTAKE (flagged arguments)
+    do
+      case "${option}"
+       in
+        r) READABLE_DIRS+=(${OPTARG});;
+        w) WRITABLE_DIRS+=(${OPTARG});;
+        x) EXAMPLE=${OPTARG};;
+      esac
+    done
 
-    DIRSOK=0
-    PERMCRIT=7
-    DIRS2CHK=0
-    DIRPERMS="NOK"
-
-  # ARGUMENT INTAKE
-
-    while getopts c:x: option      #FLAGGED
-      do
-        case "${option}"
-         in
-          c) PERMCRIT=${OPTARG};;
-          x) EXAMPLE=${OPTARG};;
-        esac
-      done
-    DIRS2CHK=${@:$OPTIND}            #NON-FLAGGED
-
+DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
 
 # FUNCTION DEFINITION:
 
@@ -92,10 +88,19 @@
 
 # LOGIC EXECUTION:
 
-  checkInput
-  for i in ${DIRS2CHK[*]}; do
-    calcPerm $i
-    chkPerm $i
-  done
-  resultHandler
-  exit 1;
+#checkInput @fixme
+
+for permission in ${!DIRECTORIES[@]}
+do
+    echo Checking permission level ${permission}:
+    PERMCRIT=${permission}
+    for directory in ${DIRECTORIES[${permission}]}
+    do
+        calcPerm ${directory}
+        chkPerm ${directory}
+    done
+done
+
+resultHandler
+
+exit 1;
