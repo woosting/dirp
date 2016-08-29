@@ -2,10 +2,14 @@
 #
 # # DIRectory series Permission checker (DIRP)
 #
-# This script checks directory permissions for a series of provided paths
-# (arguments). It marks each path individually for having met a criterium
-# (configurable) or not. *One* directroy not passing the checks renders the
-# final result `FAILED` (setting the script's exit status accordingly).
+# Takes in the argument -c (criterion for the permission to check on):
+# - 7 (rwx) 
+# - 6 (rw-)
+# - 5 (r-x) 
+# - 4 (r--) 
+# - 3 (-wx)
+# - 2 (-w-)
+# - 1 (--x)
 #
 # Copyright 2016 Willem Oosting
 #
@@ -27,17 +31,25 @@
 
 # CONFIGURATION:
 
-  PERMCRIT=7          #Cumulatively: read=4 write=2 execute=1
-  EMCOL='\033[1m'     #EMPHASIS color (default: BOLD)
-  NOKCOL='\033[0;31m' #NOT OK color (default: RED)
-  OKCOL='\033[0;32m'  #OK color (default: GREEN)
-  RCOL='\033[0m'      #RESET color (default: terminal default)
+  EMCOL='\033[1m'               #EMPHASIS color (default: BOLD)
+  NOKCOL='\033[0;31m'           #NOT OK color (default: RED)
+  OKCOL='\033[0;32m'            #OK color (default: GREEN)
+  RCOL='\033[0m'                #RESET color (default: terminal default)
 
 
 # INITIALISATION:
 
-  DIRS2CHK=( "$@" )
-  DIRSOK=0
+  DIRSOK=0                      #DEFAULT   (strict)
+#  DIRS2CHK=( "$@" )             #CL-INTAKE (non-flaged arguments)
+  PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
+  while getopts c:d: option     #CL-INTAKE (flagged arguments)
+    do
+      case "${option}"
+       in
+        c) PERMCRIT=${OPTARG};;
+        d) DIRS2CHK=( "${OPTARG}" ) ;;
+      esac
+    done
 
 
 # FUNCTION DEFINITION:
