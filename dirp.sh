@@ -22,25 +22,33 @@
 
 # CONFIGURATION:
 
-  EMCOL='\033[1m'               #EMPHASIS color (default: BOLD)
-  NOKCOL='\033[0;31m'           #NOT OK color (default: RED)
-  OKCOL='\033[0;32m'            #OK color (default: GREEN)
-  RCOL='\033[0m'                #RESET color (default: terminal default)
+  EMCOL='\033[1m'                 #EMPHASIS color (default: BOLD)
+  NOKCOL='\033[0;31m'             #NOT OK color (default: RED)
+  OKCOL='\033[0;32m'              #OK color (default: GREEN)
+  RCOL='\033[0m'                  #RESET color (default: terminal default)
 
 
 # INITIALISATION:
 
-  DIRSOK=0                      #DEFAULT   (strict)
-  PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
-  while getopts c: option     #CL-INTAKE (flagged arguments)
-    do
-      case "${option}"
-       in
-        c) PERMCRIT=${OPTARG};;
-      esac
-    done
+  # STATICS
 
-  DIRS2CHK=${@:$OPTIND}
+    DIRSOK=0
+    PERMCRIT=7
+    DIRS2CHK=0
+    DIRPERMS="NOK"
+
+  # ARGUMENT INTAKE
+
+    while getopts c:x: option      #FLAGGED
+      do
+        case "${option}"
+         in
+          c) PERMCRIT=${OPTARG};;
+          x) EXAMPLE=${OPTARG};;
+        esac
+      done
+    DIRS2CHK=${@:$OPTIND}            #NON-FLAGGED
+
 
 # FUNCTION DEFINITION:
 
@@ -63,14 +71,6 @@
   function chkPerm() {
     if [ ${PERM} -ge ${PERMCRIT} ]
       then
-        PERMCHECK=1
-      else
-        PERMCHECK=0
-    fi
-  }
-  function chkDir() {
-    if [ ${PERMCHECK} == 1 ]
-      then
         echo -e "${OKCOL}[x]$RCOL $1"
         DIRSOK=$((DIRSOK + 1))
       else
@@ -81,6 +81,7 @@
     if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
       then
         echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${PERMCRIT}."
+        DIRPERMS="OK"
         exit 0;
       else
         echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${PERMCRIT}!"
@@ -95,7 +96,6 @@
   for i in ${DIRS2CHK[*]}; do
     calcPerm $i
     chkPerm $i
-    chkDir $i
   done
   resultHandler
   exit 1;
