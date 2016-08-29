@@ -2,15 +2,6 @@
 #
 # # DIRectory series Permission checker (DIRP)
 #
-# Takes in the argument -c (criterion for the permission to check on):
-# - 7 (rwx) 
-# - 6 (rw-)
-# - 5 (r-x) 
-# - 4 (r--) 
-# - 3 (-wx)
-# - 2 (-w-)
-# - 1 (--x)
-#
 # Copyright 2016 Willem Oosting
 #
 # >This program is free software: you can redistribute it and/or modify
