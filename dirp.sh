@@ -31,17 +31,16 @@
 # INITIALISATION:
 
   DIRSOK=0                      #DEFAULT   (strict)
-#  DIRS2CHK=( "$@" )             #CL-INTAKE (non-flaged arguments)
   PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
-  while getopts c:d: option     #CL-INTAKE (flagged arguments)
+  while getopts c: option     #CL-INTAKE (flagged arguments)
     do
       case "${option}"
        in
         c) PERMCRIT=${OPTARG};;
-        d) DIRS2CHK=( "${OPTARG}" ) ;;
       esac
     done
 
+  DIRS2CHK=${@:$OPTIND}
 
 # FUNCTION DEFINITION:
 
