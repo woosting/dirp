@@ -48,8 +48,10 @@
     DIRS2CHK[7]=${DIRS2WRITE[@]}
   fi
   if [ ${#DIRS2CHK[@]} -eq 0 ]; then
-    echo -e "${EMCOL}UNKNOWN WHAT TO CHECK$RCOL: Please supply at least one criteroim (-r|w) with a directory path to check!"
-    echo -e "For example: #$ dirp -r /path/directoryToCheck"
+    echo -e "${EMCOL}UNKNOWN WHAT TO CHECK$RCOL: Please provide at least one criterion (-r|-w) cimbined with a directory path to check!"
+    echo -e "E.g.: ~$ dirp -r /path/dirToCheck"
+    echo -e "      ~$ dirp -r /path/dirToCheck -w /path2/direcToCheck2"
+    echo -e "      ~$ dirp -w \"/path1/dirToCheck1 /path2/dirToCheck2\""
     exit 1;
   fi
 
@@ -64,20 +66,20 @@
   function chkPerm() {
     if [ ${PERM} -ge ${PERMCRIT} ]
       then
-        echo -e "${OKCOL}[x]$RCOL $1"
+        echo -e "${OKCOL}[${PERMCRIT}]$RCOL $1"
         DIRSOK=$((DIRSOK + 1))
       else
-        echo -e "${NOKCOL}[!]$RCOL $1"
+        echo -e "${NOKCOL}[${PERMCRIT}]$RCOL $1"
     fi
   }
   function resultHandler() {
     if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
       then
-        echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${PERMCRIT}."
+        echo -e "${EMCOL}ALL TESTS PASSED!${RCOL}"
         DIRPERMS="OK"
         exit 0;
       else
-        echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${PERMCRIT}!"
+        echo -e "${EMCOL}ONE OR MORE TESTS FAILED!${RCOL}!"
         exit 1;
     fi
   }
