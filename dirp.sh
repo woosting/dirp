@@ -29,35 +29,32 @@
 
 
 # INITIALISATION:
-  DIRECTORIES=()
   DIRSOK=0                      #DEFAULT   (strict)
   PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
   DIRPERMS="NOK"
 
-  while getopts r:w: option     #CL-INTAKE (flagged arguments)
-    do
-      case "${option}"
-       in
-        r) READABLE_DIRS+=(${OPTARG});;
-        w) WRITABLE_DIRS+=(${OPTARG});;
-        x) EXAMPLE=${OPTARG};;
-      esac
-    done
-
-DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
+  while getopts r:w: option; do  #CL-INTAKE (flagged arguments)
+    case "${option}"
+     in
+      r) DIRS2READ+=(${OPTARG});;
+      w) DIRS2WRITE+=(${OPTARG});;
+      x) EXAMPLE=${OPTARG};;
+    esac
+  done
+  if [ ${#DIRS2READ[@]} -ge 1 ]; then
+    DIRS2CHK[5]=${DIRS2READ[@]}
+  fi
+  if [ ${#DIRS2WRITE[@]} -ge 1 ]; then
+    DIRS2CHK[7]=${DIRS2WRITE[@]}
+  fi
+  if [ ${#DIRS2CHK[@]} -eq 0 ]; then
+    echo -e "${EMCOL}UNKNOWN WHAT TO CHECK$RCOL: Please supply at least one criteroim (-r|w) with a directory path to check!"
+    echo -e "For example: #$ dirp -r /path/directoryToCheck"
+    exit 1;
+  fi
 
 # FUNCTION DEFINITION:
 
-  function checkInput() {
-    if [ ${#DIRS2CHK[@]} -ge 1 ]
-      then
-        echo -e "Checking directory permissions..."
-      else
-        echo -e "${EMCOL}NOTHING TO CHECK$RCOL: Please supply at least one directory as an argument:"
-        echo -e "For example: #$ dirp /path/directoryToCheck"
-        exit 1;
-    fi
-  }
   function calcPerm() {
     PERM=0
     test -r $1 && PERM=$((PERM + 4))
@@ -90,11 +87,11 @@ DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
 
 #checkInput @fixme
 
-for permission in ${!DIRECTORIES[@]}
+for permission in ${!DIRS2CHK[@]}
 do
     echo Checking permission level ${permission}:
     PERMCRIT=${permission}
-    for directory in ${DIRECTORIES[${permission}]}
+    for directory in ${DIRS2CHK[${permission}]}
     do
         calcPerm ${directory}
         chkPerm ${directory}
