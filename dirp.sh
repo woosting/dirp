@@ -22,16 +22,17 @@
 
 # CONFIGURATION:
 
-  EMCOL='\033[1m'               #EMPHASIS color (default: BOLD)
-  NOKCOL='\033[0;31m'           #NOT OK color (default: RED)
-  OKCOL='\033[0;32m'            #OK color (default: GREEN)
-  RCOL='\033[0m'                #RESET color (default: terminal default)
+  EMCOL='\033[1m'                 #EMPHASIS color (default: BOLD)
+  NOKCOL='\033[0;31m'             #NOT OK color (default: RED)
+  OKCOL='\033[0;32m'              #OK color (default: GREEN)
+  RCOL='\033[0m'                  #RESET color (default: terminal default)
 
 
 # INITIALISATION:
   DIRECTORIES=()
   DIRSOK=0                      #DEFAULT   (strict)
   PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
+  DIRPERMS="NOK"
 
   while getopts r:w: option     #CL-INTAKE (flagged arguments)
     do
@@ -39,6 +40,7 @@
        in
         r) READABLE_DIRS+=(${OPTARG});;
         w) WRITABLE_DIRS+=(${OPTARG});;
+        x) EXAMPLE=${OPTARG};;
       esac
     done
 
@@ -65,14 +67,6 @@ DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
   function chkPerm() {
     if [ ${PERM} -ge ${PERMCRIT} ]
       then
-        PERMCHECK=1
-      else
-        PERMCHECK=0
-    fi
-  }
-  function chkDir() {
-    if [ ${PERMCHECK} == 1 ]
-      then
         echo -e "${OKCOL}[x]$RCOL $1"
         DIRSOK=$((DIRSOK + 1))
       else
@@ -83,6 +77,7 @@ DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
     if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
       then
         echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${PERMCRIT}."
+        DIRPERMS="OK"
         exit 0;
       else
         echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${PERMCRIT}!"
@@ -103,8 +98,9 @@ do
     do
         calcPerm ${directory}
         chkPerm ${directory}
-        chkDir ${directory}
     done
 done
 
 resultHandler
+
+exit 1;
