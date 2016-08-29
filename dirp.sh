@@ -29,18 +29,20 @@
 
 
 # INITIALISATION:
-
+  DIRECTORIES=()
   DIRSOK=0                      #DEFAULT   (strict)
   PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
-  while getopts c: option     #CL-INTAKE (flagged arguments)
+
+  while getopts r:w: option     #CL-INTAKE (flagged arguments)
     do
       case "${option}"
        in
-        c) PERMCRIT=${OPTARG};;
+        r) READABLE_DIRS+=(${OPTARG});;
+        w) WRITABLE_DIRS+=(${OPTARG});;
       esac
     done
 
-  DIRS2CHK=${@:$OPTIND}
+DIRECTORIES=([5]=${READABLE_DIRS[@]} [7]=${WRITABLE_DIRS[@]})
 
 # FUNCTION DEFINITION:
 
@@ -91,11 +93,18 @@
 
 # LOGIC EXECUTION:
 
-  checkInput
-  for i in ${DIRS2CHK[*]}; do
-    calcPerm $i
-    chkPerm $i
-    chkDir $i
-  done
-  resultHandler
-  exit 1;
+#checkInput @fixme
+
+for permission in ${!DIRECTORIES[@]}
+do
+    echo Checking permission level ${permission}:
+    PERMCRIT=${permission}
+    for directory in ${DIRECTORIES[${permission}]}
+    do
+        calcPerm ${directory}
+        chkPerm ${directory}
+        chkDir ${directory}
+    done
+done
+
+resultHandler
