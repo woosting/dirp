@@ -1,10 +1,5 @@
 # DIRectory series Permission checker (DIRP)
 
-This script checks directory permissions for a series of provided paths
-(arguments). It marks each path individually for having met a criterium
-(configurable) or not. *One* directroy not passing the checks renders the
-final result `FAILED` (setting the script's exit status accordingly).
-
 Copyright 2016 Willem Oosting
 
 >This program is free software: you can redistribute it and/or modify
