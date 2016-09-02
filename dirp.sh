@@ -21,85 +21,99 @@
 
 
 # CONFIGURATION:
-
-  EMCOL='\033[1m'                 #EMPHASIS color (default: BOLD)
-  NOKCOL='\033[0;31m'             #NOT OK color (default: RED)
-  OKCOL='\033[0;32m'              #OK color (default: GREEN)
-  RCOL='\033[0m'                  #RESET color (default: terminal default)
-
+EMCOL='\033[1m'                 #EMPHASIS color (default: BOLD)
+NOKCOL='\033[0;31m'             #NOT OK color (default: RED)
+OKCOL='\033[0;32m'              #OK color (default: GREEN)
+RCOL='\033[0m'                  #RESET color (default: terminal default)
 
 # INITIALISATION:
-  DIRSOK=0                      #DEFAULT   (strict)
-  PERMCRIT=7                    #DEFAULT   (cumulatively: read=4 write=2 execute=1)
-  DIRPERMS="NOK"
+ERRORS=()
 
-  while getopts r:w: option; do  #CL-INTAKE (flagged arguments)
-    case "${option}"
-     in
-      r) DIRS2READ+=(${OPTARG});;
-      w) DIRS2WRITE+=(${OPTARG});;
-      x) EXAMPLE=${OPTARG};;
-    esac
-  done
-  if [ ${#DIRS2READ[@]} -ge 1 ]; then
-    DIRS2CHK[5]=${DIRS2READ[@]}
-  fi
-  if [ ${#DIRS2WRITE[@]} -ge 1 ]; then
-    DIRS2CHK[7]=${DIRS2WRITE[@]}
-  fi
-  if [ ${#DIRS2CHK[@]} -eq 0 ]; then
-    echo -e "${EMCOL}UNKNOWN WHAT TO CHECK$RCOL: Please provide at least one criterion (-r|-w) cimbined with a directory path to check!"
-    echo -e "E.g.: ~$ dirp -r /path/dirToCheck"
-    echo -e "      ~$ dirp -r /path/dirToCheck -w /path2/direcToCheck2"
-    echo -e "      ~$ dirp -w \"/path1/dirToCheck1 /path2/dirToCheck2\""
+while getopts r:w: option     #CL-INTAKE (flagged arguments)
+do
+  case "${option}"
+   in
+    r) READABLE_DIRS+=(${OPTARG});;
+    w) WRITABLE_DIRS+=(${OPTARG});;
+  esac
+done
+
+if [ ${#READABLE_DIRS[@]} -gt 0 ]; then
+    DIRECTORIES[0]=${READABLE_DIRS[@]}
+fi
+
+if [ ${#WRITABLE_DIRS[@]} -gt 0 ]; then
+    DIRECTORIES[1]=${WRITABLE_DIRS[@]}
+fi
+
+if [ ${#DIRECTORIES[@]} -eq 0 ]; then
+    echo -e "USAGE: dirp [-r /path] [-w /path]"
+    echo -e
+    echo -e "Input arguments are missing. Please check USAGE."
     exit 1;
-  fi
+fi
 
 # FUNCTION DEFINITION:
+function permissionOk() {
+    echo -e "${OKCOL}[\u2713]$RCOL ${1}"
+}
 
-  function calcPerm() {
-    PERM=0
-    test -r $1 && PERM=$((PERM + 4))
-    test -w $1 && PERM=$((PERM + 2))
-    test -x $1 && PERM=$((PERM + 1))
-  }
-  function chkPerm() {
-    if [ ${PERM} -ge ${PERMCRIT} ]
-      then
-        echo -e "${OKCOL}[${PERMCRIT}]$RCOL $1"
-        DIRSOK=$((DIRSOK + 1))
-      else
-        echo -e "${NOKCOL}[${PERMCRIT}]$RCOL $1"
-    fi
-  }
-  function resultHandler() {
-    if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
-      then
-        echo -e "${EMCOL}ALL TESTS PASSED!${RCOL}"
-        DIRPERMS="OK"
-        exit 0;
-      else
-        echo -e "${EMCOL}ONE OR MORE TESTS FAILED!${RCOL}!"
-        exit 1;
-    fi
-  }
+function permissionError() {
+    ERRORS+=("${2} doesn't meet the requirement of ${1} (is ${PERM})")
+    echo -e "${NOKCOL}[!]$RCOL ${1}"
+}
 
+function chkPerm() {
+    case ${1} in
+        read)
+            if [ -r "${2}" ]; then
+                permissionOk ${2}
+            else
+                permissionError ${2}
+            fi
+        ;;
+        write)
+            if [ -w "${2}" ]; then
+                    permissionOk ${2}
+                else
+                    permissionError ${2}
+                fi
+            ;;
+        *) permissionError ${2};;
+     esac
+}
 
 # LOGIC EXECUTION:
+echo -e "Checking directory permissions..."
 
-#checkInput @fixme
-
-for permission in ${!DIRS2CHK[@]}
+for permission in ${!DIRECTORIES[@]}
 do
-    echo Checking permission level ${permission}:
-    PERMCRIT=${permission}
-    for directory in ${DIRS2CHK[${permission}]}
+    case ${permission} in
+        0) requirement=read;;
+        1) requirement=write;;
+    esac
+
+    echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions for:"
+
+    for directory in ${DIRECTORIES[${permission}]}
     do
-        calcPerm ${directory}
-        chkPerm ${directory}
+        directory=$(readlink -f ${directory})
+
+        if [ ! -d "${directory}" ]; then
+            echo -e "ERROR: The specified argument '${directory}' is not a directory."
+            exit 1
+        fi
+
+        chkPerm ${requirement} ${directory}
     done
 done
 
-resultHandler
+if [ ${#ERRORS[@]} -eq 0 ]; then
+    echo -e "${EMCOL}PASSED${RCOL}"
 
-exit 1;
+    exit 0
+else
+    echo -e "${EMCOL}FAILED${RCOL}"
+
+    exit 1
+fi
