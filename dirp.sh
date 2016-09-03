@@ -37,13 +37,33 @@
   NOKCOL='\033[0;31m' #NOT OK color (default: RED)
   OKCOL='\033[0;32m' #OK color (default: GREEN)
   RCOL='\033[0m'    #RESET color (default: terminal default)
-  DEBUG=1
+  DEBUG=0
 
 
 # INITIALISATION:
 
   ERRORS=()
   DIRSOK=0
+
+  while getopts r:w: option
+  do
+    case "${option}"
+     in
+      r) DIRS2READ+=(${OPTARG});;
+      w) DIRS2WRITE+=(${OPTARG});;
+    esac
+  done
+  if [ ${#DIRS2READ[@]} -gt 0 ]; then
+    DIRS2CHECK[0]=${DIRS2READ[@]}
+  fi
+  if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
+    DIRS2CHECK[1]=${DIRS2WRITE[@]}
+  fi
+  TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
+  if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
+    echo -e "USAGE: dirp [-r /path] [-w /path]"
+    exit 1;
+  fi
 
 
 # FUNCTION DEFINITION:
@@ -75,7 +95,7 @@
       reportOK ${1}
     fi
   }
-
+  
 
   function checkPerm {
     for permType in ${!DIRS2CHECK[@]} 
@@ -132,25 +152,6 @@
 
 # LOGIC EXECUTION:
 
-  while getopts r:w: option
-  do
-    case "${option}"
-     in
-      r) DIRS2READ+=(${OPTARG});;
-      w) DIRS2WRITE+=(${OPTARG});;
-    esac
-  done
-  if [ ${#DIRS2READ[@]} -gt 0 ]; then
-    DIRS2CHECK[0]=${DIRS2READ[@]}
-  fi
-  if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
-    DIRS2CHECK[1]=${DIRS2WRITE[@]}
-  fi
-  TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
-  if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
-    echo -e "USAGE: dirp [-r /path] [-w /path]"
-    exit 1;
-  fi
 
   checkPerm
   debugReport
