@@ -47,7 +47,7 @@
   DEBUG=0
 
 #  function getInput () {
-#    local OPTIND v d c r w option
+    local OPTIND v d c r w option
     while getopts vdcr:w: option
     do
       case "${option}"
