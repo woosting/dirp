@@ -37,6 +37,7 @@
   NOKCOL='\033[0;31m' #NOT OK color (default: RED)
   OKCOL='\033[0;32m' #OK color (default: GREEN)
   RCOL='\033[0m'    #RESET color (default: terminal default)
+  DEBUG=1
 
 
 # INITIALISATION:
@@ -108,11 +109,30 @@
     done
   }
 
+  function resultHandler {
+    if [ ${DIRSOK} -ne ${TOTALNRDIRS2CHECK} ]; then
+      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+      exit 1
+    else
+      echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+      exit 0
+    fi
+   }
 
+  function debugReport {
+    if [ ${DEBUG} -eq "1" ]; then
+      echo -e "-----------------"
+      echo -e "DIRS OK:    ${DIRSOK}"
+      echo -e "ERRORS:     ${#ERRORS[@]}"
+      echo -e ""
+      echo -e "DIRS TOTAL: ${TOTALNRDIRS2CHECK}"
+      echo -e "-----------------"
+    fi
+  }
 
 # LOGIC EXECUTION:
 
-  while getopts r:w: option     #CL-INTAKE (flagged arguments)
+  while getopts r:w: option
   do
     case "${option}"
      in
@@ -133,14 +153,5 @@
   fi
 
   checkPerm
-
-echo -e "DIRS    OK: ${DIRSOK}"
-echo -e "DIRS TOTAL: ${TOTALNRDIRS2CHECK}"
-
-  if [ ${DIRSOK} -ne ${TOTALNRDIRS2CHECK} ]; then
-    echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
-    exit 1
-  else
-    echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
-    exit 0
-  fi
+  debugReport
+  resultHandler
