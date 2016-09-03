@@ -20,8 +20,8 @@
 # FORK ME AT GITHUB: https://github.com/woosting/dirp
 
 ./dirp.sh \
-  -r /tmp -r ~ -w /etc -r /root -r ~/tmp \
-  -w /tmp -w ~ -r /etc -w /root -w ~/tmp
+  -r /tmp -r ~ -r /etc -r /root -r ~/tmp \
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp
 
 echo -e ""
 ./dirp.sh \

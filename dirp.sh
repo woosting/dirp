@@ -69,71 +69,67 @@
 # FUNCTION DEFINITION:
 
   function reportOK() {
-      echo -e "${OKCOL}[\u2713]$RCOL ${1}"
+    echo -e "${OKCOL}[\u2713]$RCOL ${1}"
   }
 
   function reportNOK() {
-      ERRORS+=("${1} verified NOK: ${2}")
-      echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
+    ERRORS+=("${1} verified NOK: ${2}")
+    echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
   }
 
   function checkDir() {
-      if [ ! -d "$2" ]; then
-        reportNOK $2 "(not a directory)"
-      else
-        case ${1} in
-          read)
-            if [ -r "${2}" ]; then
-              if [ ! "$(ls -A $2)"  ]; then
-                reportNOK $2 "(empty)"
-              else
-                reportOK ${2}
-              fi
+    if [ ! -d "$2" ]; then
+      reportNOK $2 "(not a directory)"
+    else
+      case ${1} in
+        read)
+          if [ -r "${2}" ]; then
+            if [ ! "$(ls -A $2)"  ]; then
+              reportNOK $2 "(empty)"
             else
-              reportNOK ${2}
+              reportOK ${2}
             fi
-          ;;
-          write)
-            if [ -w "${2}" ]; then
-              if [ ! "$(ls -A $2)"  ]; then
-                reportNOK $2 "(empty)"
-              else
-                reportOK ${2}
-              fi
+          else
+            reportNOK ${2}
+          fi
+        ;;
+        write)
+          if [ -w "${2}" ]; then
+            if [ ! "$(ls -A $2)"  ]; then
+              reportNOK $2 "(empty)"
             else
-              reportNOK ${2}
+              reportOK ${2}
             fi
-          ;;
-          *) reportNOK ${2};;
-        esac
-      fi
+          else
+            reportNOK ${2}
+          fi
+        ;;
+        *) reportNOK ${2};;
+      esac
+    fi
   }
 
 
 # LOGIC EXECUTION:
 
-  for permission in ${!DIRS2CHECK[@]}
+  for permType in ${!DIRS2CHECK[@]}
   do
-      case ${permission} in
-          0) requirement="read";;
-          1) requirement="write";;
-      esac
-
-      echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
-
-      for directory in ${DIRS2CHECK[${permission}]}
-      do
-          directory=$(readlink -f ${directory})
-          checkDir ${requirement} ${directory}
-      done
+    case ${permType} in
+      0) requirement="read";;
+      1) requirement="write";;
+    esac
+    echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
+    for directory in ${DIRS2CHECK[${permType}]}
+    do
+      directory=$(readlink -f ${directory})
+      checkDir ${requirement} ${directory}
+    done
   done
 
   if [ ${#ERRORS[@]} -eq 0 ]; then
-      echo -e "${EMCOL}PASSED${RCOL}: All directories are verified OK!"
-
-      exit 0
+    echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+    exit 0
   else
-      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
-
-      exit 1
+    echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+    exit 1
   fi
