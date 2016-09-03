@@ -21,7 +21,8 @@
 
 ./dirp.sh \
   -r /tmp -r ~ -r /etc -r /root -r ~/tmp \
-  -w /tmp -w ~ -w /etc -w /root -w ~/tmp
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp \
+  -e /tmp -e ~ -e /etc -e /root -e ~/tmp \
 
 echo -e ""
 ./dirp.sh \

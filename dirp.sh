@@ -42,6 +42,75 @@
 # INITIALISATION:
 
   ERRORS=()
+  DIRSOK=0
+
+
+# FUNCTION DEFINITION:
+
+  
+  function reportOK() {
+    DIRSOK=$((DIRSOK + 1))
+    echo -e "${OKCOL}[\u2713]$RCOL ${1}"
+
+  }
+
+  function reportNOK() {
+    ERRORS+=("${1} verified NOK: ${2}")
+    echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
+  }
+
+  function checkIfDir() {
+    if [ ! -d "$1" ]; then
+      reportNOK $1 "(not a directory)"
+    else
+      reportOK $1
+    fi
+  }
+
+  function checkIfContent {
+    if [ ! "$(ls -A ${1})"  ]; then
+      reportNOK ${1} "(empty)"
+    else
+      reportOK ${1}
+    fi
+  }
+
+
+  function checkPerm {
+    for permType in ${!DIRS2PERMCHECK[@]} 
+    do
+      case ${permType} in
+        0) requirement="read";;
+        1) requirement="write";;
+      esac
+      echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
+      for directory in ${DIRS2PERMCHECK[${permType}]}
+      do
+        directory=$(readlink -f ${directory})
+        case ${requirement} in
+          read)
+            if [ -r "${directory}" ]; then
+              reportOK ${directory}
+            else
+              reportNOK ${directory}
+            fi
+          ;;
+          write)
+            if [ -w "${directory}" ]; then
+              reportOK ${directory}
+            else
+              reportNOK ${directory}
+            fi
+          ;;
+          *) reportNOK ${directory};;
+        esac
+      done
+    done
+  }
+
+
+
+# LOGIC EXECUTION:
 
   while getopts r:w: option     #CL-INTAKE (flagged arguments)
   do
@@ -51,86 +120,22 @@
       w) DIRS2WRITE+=(${OPTARG});;
     esac
   done
-
   if [ ${#DIRS2READ[@]} -gt 0 ]; then
-    DIRS2CHECK[0]=${DIRS2READ[@]}
+    DIRS2PERMCHECK[0]=${DIRS2READ[@]}
   fi
-
   if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
-    DIRS2CHECK[1]=${DIRS2WRITE[@]}
+    DIRS2PERMCHECK[1]=${DIRS2WRITE[@]}
   fi
-
-  if [ ${#DIRS2CHECK[@]} -eq 0 ]; then
+  DIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
+  if [ ${DIRS2CHECK} -eq 0 ]; then
     echo -e "USAGE: dirp [-r /path] [-w /path]"
     exit 1;
   fi
 
 
-# FUNCTION DEFINITION:
+  checkPerm
 
-  function reportOK() {
-    echo -e "${OKCOL}[\u2713]$RCOL ${1}"
-  }
-
-  function reportNOK() {
-    ERRORS+=("${1} verified NOK: ${2}")
-    echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
-  }
-
-  function checkForEmpty {
-    if [ ! "$(ls -A $1)"  ]; then
-      reportNOK $1 "(empty)"
-    else
-      reportOK ${1}
-    fi
-  }
-
-  function checkPerm {
-    case ${1} in
-      read)
-        if [ -r "${2}" ]; then
-          checkForEmpty $2
-        else
-          reportNOK ${2}
-        fi
-      ;;
-      write)
-        if [ -w "${2}" ]; then
-          checkForEmpty $2
-        else
-          reportNOK ${2}
-        fi
-      ;;
-      *) reportNOK ${2};;
-    esac
-  }
-
-  function checkDir() {
-    if [ ! -d "$2" ]; then
-      reportNOK $2 "(not a directory)"
-    else
-      checkPerm $1 $2
-    fi
-  }
-
-
-# LOGIC EXECUTION:
-
-  for permType in ${!DIRS2CHECK[@]}
-  do
-    case ${permType} in
-      0) requirement="read";;
-      1) requirement="write";;
-    esac
-    echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
-    for directory in ${DIRS2CHECK[${permType}]}
-    do
-      directory=$(readlink -f ${directory})
-      checkDir ${requirement} ${directory}
-    done
-  done
-
-  if [ ${#ERRORS[@]} -eq 0 ]; then
+  if [ ${DIRSOK} -eq #DIRS2CHECK[@]} ]; then
     echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
     exit 0
   else
