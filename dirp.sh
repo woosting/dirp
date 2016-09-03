@@ -37,41 +37,49 @@
   NOKCOL='\033[0;31m' #NOT OK color (default: RED)
   OKCOL='\033[0;32m' #OK color (default: GREEN)
   RCOL='\033[0m'    #RESET color (default: terminal default)
-  DEBUG=0
 
 
 # INITIALISATION:
 
-  ERRORS=()
   DIRSOK=0
+  CHECKFORCONTENTS=0
+  VERBOSE=0
+  DEBUG=0
 
-  while getopts r:w: option
-  do
-    case "${option}"
-     in
-      r) DIRS2READ+=(${OPTARG});;
-      w) DIRS2WRITE+=(${OPTARG});;
-    esac
-  done
-  if [ ${#DIRS2READ[@]} -gt 0 ]; then
-    DIRS2CHECK[0]=${DIRS2READ[@]}
-  fi
-  if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
-    DIRS2CHECK[1]=${DIRS2WRITE[@]}
-  fi
-  TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
-  if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
-    echo -e "USAGE: dirp [-r /path] [-w /path]"
-    exit 1;
-  fi
-
+#  function getInput () {
+#    local OPTIND v d c r w option
+    while getopts vdcr:w: option
+    do
+      case "${option}"
+       in
+        r) DIRS2READ+=(${OPTARG});;
+        w) DIRS2WRITE+=(${OPTARG});;
+        e) CHECKFORCONTENTS=1;;
+        v) VERBOSE=1;;
+        d) DEBUG=1;;
+      esac
+    done
+    if [ ${#DIRS2READ[@]} -gt 0 ]; then
+      DIRS2CHECK[0]=${DIRS2READ[@]}
+    fi
+    if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
+      DIRS2CHECK[1]=${DIRS2WRITE[@]}
+    fi
+    TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
+    if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
+      echo -e "USAGE: dirp [-v] [-c] [-r /path] [-w /path]"
+      exit 1;
+    fi
+#  }
 
 # FUNCTION DEFINITION:
 
   
   function reportOK() {
     DIRSOK=$((DIRSOK + 1))
-    echo -e "${OKCOL}[\u2713]$RCOL ${1}"
+    if [ ${VERBOSE} -eq 1 ]; then
+      echo -e "${OKCOL}[\u2713]$RCOL ${1}"
+    fi
 
   }
 
@@ -104,7 +112,9 @@
         0) requirement="read";;
         1) requirement="write";;
       esac
-      echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
+      if [ ${VERBOSE} -eq 1 ]; then
+        echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
+      fi
       for directory in ${DIRS2CHECK[${permType}]}
       do
         directory=$(readlink -f ${directory})
@@ -130,12 +140,12 @@
   }
 
   function resultHandler {
-    if [ ${DIRSOK} -ne ${TOTALNRDIRS2CHECK} ]; then
-      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
-      exit 1
-    else
+    if [ ${DIRSOK} -eq ${TOTALNRDIRS2CHECK} ]; then
       echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
       exit 0
+    else
+      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+      exit 1
     fi
    }
 
@@ -152,7 +162,7 @@
 
 # LOGIC EXECUTION:
 
-
+#  getInput "$@"
   checkPerm
   debugReport
   resultHandler
