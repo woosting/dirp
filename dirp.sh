@@ -77,14 +77,14 @@
 
 
   function checkPerm {
-    for permType in ${!DIRS2PERMCHECK[@]} 
+    for permType in ${!DIRS2CHECK[@]} 
     do
       case ${permType} in
         0) requirement="read";;
         1) requirement="write";;
       esac
       echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
-      for directory in ${DIRS2PERMCHECK[${permType}]}
+      for directory in ${DIRS2CHECK[${permType}]}
       do
         directory=$(readlink -f ${directory})
         case ${requirement} in
@@ -121,24 +121,26 @@
     esac
   done
   if [ ${#DIRS2READ[@]} -gt 0 ]; then
-    DIRS2PERMCHECK[0]=${DIRS2READ[@]}
+    DIRS2CHECK[0]=${DIRS2READ[@]}
   fi
   if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
-    DIRS2PERMCHECK[1]=${DIRS2WRITE[@]}
+    DIRS2CHECK[1]=${DIRS2WRITE[@]}
   fi
-  DIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
-  if [ ${DIRS2CHECK} -eq 0 ]; then
+  TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
+  if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
     echo -e "USAGE: dirp [-r /path] [-w /path]"
     exit 1;
   fi
 
-
   checkPerm
 
-  if [ ${DIRSOK} -eq #DIRS2CHECK[@]} ]; then
-    echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
-    exit 0
-  else
+echo -e "DIRS    OK: ${DIRSOK}"
+echo -e "DIRS TOTAL: ${TOTALNRDIRS2CHECK}"
+
+  if [ ${DIRSOK} -ne ${TOTALNRDIRS2CHECK} ]; then
     echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
     exit 1
+  else
+    echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+    exit 0
   fi
