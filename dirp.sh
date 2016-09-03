@@ -77,35 +77,39 @@
     echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
   }
 
+  function checkForEmpty {
+    if [ ! "$(ls -A $1)"  ]; then
+      reportNOK $1 "(empty)"
+    else
+      reportOK ${1}
+    fi
+  }
+
+  function checkPerm {
+    case ${1} in
+      read)
+        if [ -r "${2}" ]; then
+          checkForEmpty $2
+        else
+          reportNOK ${2}
+        fi
+      ;;
+      write)
+        if [ -w "${2}" ]; then
+          checkForEmpty $2
+        else
+          reportNOK ${2}
+        fi
+      ;;
+      *) reportNOK ${2};;
+    esac
+  }
+
   function checkDir() {
     if [ ! -d "$2" ]; then
       reportNOK $2 "(not a directory)"
     else
-      case ${1} in
-        read)
-          if [ -r "${2}" ]; then
-            if [ ! "$(ls -A $2)"  ]; then
-              reportNOK $2 "(empty)"
-            else
-              reportOK ${2}
-            fi
-          else
-            reportNOK ${2}
-          fi
-        ;;
-        write)
-          if [ -w "${2}" ]; then
-            if [ ! "$(ls -A $2)"  ]; then
-              reportNOK $2 "(empty)"
-            else
-              reportOK ${2}
-            fi
-          else
-            reportNOK ${2}
-          fi
-        ;;
-        *) reportNOK ${2};;
-      esac
+      checkPerm $1 $2
     fi
   }
 
