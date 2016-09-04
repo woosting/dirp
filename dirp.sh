@@ -58,10 +58,10 @@
     TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
     if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
       echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
-      echo -e "         -r Read permission check (for quoted paths)"
-      echo -e "         -w Write permission check (for quoted paths)"
-      echo -e "         -e Empty checks (additional errors if empty)"
-      echo -e "         -v Verbose mode (providing more feedback)"
+      echo -e "         -r Read permission check (for provided quoted (!) paths)"
+      echo -e "         -w Write permission check (for provided quoted (!) paths)"
+      echo -e "         -e Empty-check mode (errors if a dir to r/w is empty)"
+      echo -e "         -v Verbose mode (provides more feedback)"
       exit 1;
     fi
   }
