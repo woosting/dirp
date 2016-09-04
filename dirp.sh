@@ -180,3 +180,5 @@
   checkPerm
   debugReport
   resultHandler
+
+exit 1
