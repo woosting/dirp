@@ -150,16 +150,14 @@
 
   function resultHandler {
     if [ ${DIRSOK} -eq ${TOTALNRDIRS2CHECK} ]; then
-      if [ ${VERBOSELVL} -ge 1 ]; then
-        echo -e "------------------------------------"
+      if [ ${VERBOSELVL} -ge 0 ]; then
+        echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
       fi
-      echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
       exit 0
     else
-      if [ ${VERBOSELVL} -ge 1 ]; then
-        echo -e "--------------------------------------"
+      if [ ${VERBOSELVL} -ge 0 ]; then
+        echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
       fi
-      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
       exit 1
     fi
    }

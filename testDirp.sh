@@ -24,19 +24,23 @@ echo "--- MIXED results (verbose) ---"
 ./dirp.sh -v -e \
   -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir -r ${HOME}/tmp/file \
   -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir -w ${HOME}/tmp/file
+echo -e ""
 echo -e "--- MIXED results (normal) ---"
 ./dirp.sh -e \
   -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir -r ${HOME}/tmp/file \
   -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir -w ${HOME}/tmp/file
-echo -e "--- SUCCESS results (normal) ---"
+echo -e ""
+echo -e "--- SUCCESS only (normal) ---"
 ./dirp.sh \
   -r /tmp -r ~ -r /etc -r ~/tmp \
   -w /tmp -w ~ -w ~/tmp
-echo -e "--- REALISTIC USECASE (verbose) ---"
+echo -e ""
+echo -e "--- REALISTIC (verbose) ---"
 ./dirp.sh -e -v \
   -r "${HOME}/.storeBackup/sources/*" \
   -w "${HOME}/.storeBackup/target/target"
-echo -e "--- REALISTIC USECASE (normal) ---"
+echo -e ""
+echo -e "--- REALISTIC (normal) ---"
 ./dirp.sh -e \
   -r "${HOME}/.storeBackup/sources/*" \
   -w "${HOME}/.storeBackup/target/target"
