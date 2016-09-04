@@ -60,7 +60,7 @@
       echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
       echo -e "         -r Read permission check (for provided quoted (!) paths)"
       echo -e "         -w Write permission check (for provided quoted (!) paths)"
-      echo -e "         -e Empty check mode (errors if a dir to r/w is empty)"
+      echo -e "         -e Empty-check mode (errors if a dir to r/w is empty)"
       echo -e "         -v Verbose mode (provides more feedback)"
       exit 1;
     fi
