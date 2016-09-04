@@ -20,17 +20,6 @@
 # FORK ME AT GITHUB: https://github.com/woosting/dirp
 
 
-# TO-DO:
-
-#  function checkMount () {
-#    if mount | grep /mnt/md0 > /dev/null; then
-#      echo "yay"
-#    else
-#      echo "nay"
-#    fi
-#  }
-
-
 # CONFIGURATION:
 
   EMCOL='\033[1m'    #EMPHASIS color (default: BOLD)
@@ -69,8 +58,8 @@
     TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
     if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
       echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
-      echo -e "         -r Read permission check (path to dir required)"
-      echo -e "         -w Write permission check (path to dir required)"
+      echo -e "         -r Read permission check (for quoted paths)"
+      echo -e "         -w Write permission check (for quoted paths)"
       echo -e "         -e Empty checks (additional errors if empty)"
       echo -e "         -v Verbose mode (providing more feedback)"
       exit 1;
@@ -94,6 +83,7 @@
 
   function checkIfEmpty {
     if [ ! "$(ls -A ${1})"  ]; then
+      REPORTCHAR="e"
       reportNOK ${1} "(empty)"
     else
       reportOK ${1}
@@ -114,7 +104,7 @@
         ;;
       esac
       if [ ${VERBOSELVL} -ge 1 ]; then
-        echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
+        echo -e "${requirement^^}..."
       fi
       for directory in ${DIRS2CHECK[${permType}]}
       do
@@ -122,7 +112,7 @@
         case ${requirement} in
           read)
             if [ ! -d "${directory}" ]; then
-              REPORTCHAR="!"
+              REPORTCHAR="d"
               reportNOK ${directory} "(not a directory)"
             else
               if [ -r "${directory}" ]; then
@@ -138,7 +128,7 @@
           ;;
           write)
             if [ ! -d "${directory}" ]; then
-              REPORTCHAR="!"
+              REPORTCHAR="d"
               reportNOK ${directory} "(not a directory)"
             else
               if [ -w "${directory}" ]; then
@@ -160,10 +150,16 @@
 
   function resultHandler {
     if [ ${DIRSOK} -eq ${TOTALNRDIRS2CHECK} ]; then
-        echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+      if [ ${VERBOSELVL} -ge 1 ]; then
+        echo -e "------------------------------------"
+      fi
+      echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
       exit 0
     else
-        echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+      if [ ${VERBOSELVL} -ge 1 ]; then
+        echo -e "--------------------------------------"
+      fi
+      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
       exit 1
     fi
    }

@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# dirc.sh tester
+# dirp.sh tester
 #
 # Copyright 2016 Willem Oosting
 #
@@ -18,32 +18,25 @@
 # >along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # FORK ME AT GITHUB: https://github.com/woosting/dirp
-clear
 
-echo -e ""
-echo "--- MIX results (verbose) ---"
-echo -e ""
+clear
+echo "--- MIXED results (verbose) ---"
 ./dirp.sh -v -e \
-  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir \
-  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir
-echo -e ""
-echo -e "--- MIX results (normal) ---"
-echo -e ""
+  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir -r ${HOME}/tmp/file \
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir -w ${HOME}/tmp/file
+echo -e "--- MIXED results (normal) ---"
 ./dirp.sh -e \
-  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir \
-  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir
-echo -e ""
-echo -e "--- SUC6 results (normal) ---"
-echo -e ""
+  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir -r ${HOME}/tmp/file \
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir -w ${HOME}/tmp/file
+echo -e "--- SUCCESS results (normal) ---"
 ./dirp.sh \
   -r /tmp -r ~ -r /etc -r ~/tmp \
   -w /tmp -w ~ -w ~/tmp
-echo -e ""
-echo -e ""
-echo -e "--- REAL USECASE (verbose) ---"
-echo -e ""
-./dirp.sh -v \
+echo -e "--- REALISTIC USECASE (verbose) ---"
+./dirp.sh -e -v \
   -r "${HOME}/.storeBackup/sources/*" \
   -w "${HOME}/.storeBackup/target/target"
-echo -e ""
-
+echo -e "--- REALISTIC USECASE (normal) ---"
+./dirp.sh -e \
+  -r "${HOME}/.storeBackup/sources/*" \
+  -w "${HOME}/.storeBackup/target/target"
