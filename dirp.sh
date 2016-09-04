@@ -42,20 +42,21 @@
 # INITIALISATION:
 
   DIRSOK=0
-  CHECKFORCONTENTS=0
-  VERBOSE=0
+  EMPTYCHECK=0
+  VERBOSELVL=0
   DEBUG=0
+  REPORTCHAR="!"
 
-#  function getInput () {
-    local OPTIND v d c r w option
-    while getopts vdcr:w: option
+  function getInput () {
+    local OPTIND r w e v d option
+    while getopts r:w:evd option
     do
       case "${option}"
        in
         r) DIRS2READ+=(${OPTARG});;
         w) DIRS2WRITE+=(${OPTARG});;
-        e) CHECKFORCONTENTS=1;;
-        v) VERBOSE=1;;
+        e) EMPTYCHECK=1;;
+        v) VERBOSELVL=1;;
         d) DEBUG=1;;
       esac
     done
@@ -67,52 +68,52 @@
     fi
     TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
     if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
-      echo -e "USAGE: dirp [-v] [-c] [-r /path] [-w /path]"
+      echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
+      echo -e "         -r Read permission check (path to dir required)"
+      echo -e "         -w Write permission check (path to dir required)"
+      echo -e "         -e Empty checks (additional errors if empty)"
+      echo -e "         -v Verbose mode (providing more feedback)"
       exit 1;
     fi
-#  }
+  }
+
 
 # FUNCTION DEFINITION:
 
-  
   function reportOK() {
     DIRSOK=$((DIRSOK + 1))
-    if [ ${VERBOSE} -eq 1 ]; then
+    if [ ${VERBOSELVL} -ge 1 ]; then
       echo -e "${OKCOL}[\u2713]$RCOL ${1}"
     fi
-
   }
 
   function reportNOK() {
     ERRORS+=("${1} verified NOK: ${2}")
-    echo -e "${NOKCOL}[!]$RCOL ${1} ${2}"
+    echo -e "${NOKCOL}[${REPORTCHAR}]$RCOL ${1} ${2}"
   }
 
-  function checkIfDir() {
-    if [ ! -d "$1" ]; then
-      reportNOK $1 "(not a directory)"
-    else
-      reportOK $1
-    fi
-  }
-
-  function checkIfContent {
+  function checkIfEmpty {
     if [ ! "$(ls -A ${1})"  ]; then
       reportNOK ${1} "(empty)"
     else
       reportOK ${1}
     fi
   }
-  
 
   function checkPerm {
     for permType in ${!DIRS2CHECK[@]} 
     do
       case ${permType} in
-        0) requirement="read";;
-        1) requirement="write";;
+        0)
+          requirement="read"
+          REPORTCHAR="r"
+        ;;
+        1)
+          requirement="write"
+          REPORTCHAR="w"
+        ;;
       esac
-      if [ ${VERBOSE} -eq 1 ]; then
+      if [ ${VERBOSELVL} -ge 1 ]; then
         echo -e "Checking ${EMCOL}${requirement^^}${RCOL} permissions:"
       fi
       for directory in ${DIRS2CHECK[${permType}]}
@@ -120,17 +121,35 @@
         directory=$(readlink -f ${directory})
         case ${requirement} in
           read)
-            if [ -r "${directory}" ]; then
-              reportOK ${directory}
+            if [ ! -d "${directory}" ]; then
+              REPORTCHAR="!"
+              reportNOK ${directory} "(not a directory)"
             else
-              reportNOK ${directory}
+              if [ -r "${directory}" ]; then
+                if [ ${EMPTYCHECK} -eq 1 ]; then
+                  checkIfEmpty ${directory}
+                else
+                  reportOK ${directory}
+                fi
+              else
+                reportNOK ${directory}
+              fi
             fi
           ;;
           write)
-            if [ -w "${directory}" ]; then
-              reportOK ${directory}
+            if [ ! -d "${directory}" ]; then
+              REPORTCHAR="!"
+              reportNOK ${directory} "(not a directory)"
             else
-              reportNOK ${directory}
+              if [ -w "${directory}" ]; then
+                if [ ${EMPTYCHECK} -eq 1 ]; then
+                  checkIfEmpty ${directory}
+                else
+                  reportOK ${directory}
+                fi                
+              else
+                reportNOK ${directory}
+              fi
             fi
           ;;
           *) reportNOK ${directory};;
@@ -141,10 +160,10 @@
 
   function resultHandler {
     if [ ${DIRSOK} -eq ${TOTALNRDIRS2CHECK} ]; then
-      echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+        echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
       exit 0
     else
-      echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+        echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
       exit 1
     fi
    }
@@ -162,7 +181,7 @@
 
 # LOGIC EXECUTION:
 
-#  getInput "$@"
+  getInput "$@"
   checkPerm
   debugReport
   resultHandler

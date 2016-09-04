@@ -18,12 +18,32 @@
 # >along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # FORK ME AT GITHUB: https://github.com/woosting/dirp
-
-./dirp.sh \
-  -v -d -r /tmp -r ~ -r /etc -r /root -r ~/tmp \
-  -v -d -w /tmp -w ~ -w /etc -w /root -w ~/tmp
+clear
 
 echo -e ""
+echo "--- MIX results (verbose) ---"
+echo -e ""
+./dirp.sh -v -e \
+  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir \
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir
+echo -e ""
+echo -e "--- MIX results (normal) ---"
+echo -e ""
+./dirp.sh -e \
+  -r /tmp -r ~ -r /etc -r /root -r ~/tmp -r ${HOME}/tmp/emptydir \
+  -w /tmp -w ~ -w /etc -w /root -w ~/tmp -w ${HOME}/tmp/emptydir
+echo -e ""
+echo -e "--- SUC6 results (normal) ---"
+echo -e ""
 ./dirp.sh \
-  -w ~/.storeBackup/sources/target \
-  -r ~/.storeBackup/sources/*
+  -r /tmp -r ~ -r /etc -r ~/tmp \
+  -w /tmp -w ~ -w ~/tmp
+echo -e ""
+echo -e ""
+echo -e "--- REAL USECASE (verbose) ---"
+echo -e ""
+./dirp.sh -v \
+  -r "${HOME}/.storeBackup/sources/*" \
+  -w "${HOME}/.storeBackup/target/target"
+echo -e ""
+
