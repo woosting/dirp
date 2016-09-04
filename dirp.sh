@@ -2,11 +2,6 @@
 #
 # # DIRectory series Permission checker (DIRP)
 #
-# This script checks directory permissions for a series of provided paths
-# (arguments). It marks each path individually for having met a criterium
-# (configurable) or not. *One* directroy not passing the checks renders the
-# final result `FAILED` (setting the script's exit status accordingly).
-#
 # Copyright 2016 Willem Oosting
 #
 # >This program is free software: you can redistribute it and/or modify
@@ -27,61 +22,161 @@
 
 # CONFIGURATION:
 
-  CRITLVL=7           #Cumulatively: read=4 write=2 execute=1
-  EMCOL='\033[1m'     #EMPHASIS color (default: BOLD)
+  EMCOL='\033[1m'    #EMPHASIS color (default: BOLD)
   NOKCOL='\033[0;31m' #NOT OK color (default: RED)
-  OKCOL='\033[0;32m'  #OK color (default: GREEN)
-  RCOL='\033[0m'      #RESET color (default: terminal default)
+  OKCOL='\033[0;32m' #OK color (default: GREEN)
+  RCOL='\033[0m'    #RESET color (default: terminal default)
 
 
 # INITIALISATION:
 
-  DIRS2CHK=( "$@" )
   DIRSOK=0
+  EMPTYCHECK=0
+  VERBOSELVL=0
+  DEBUG=0
+  REPORTCHAR="!"
+
+  function getInput () {
+    local OPTIND r w e v d option
+    while getopts r:w:evd option
+    do
+      case "${option}"
+       in
+        r) DIRS2READ+=(${OPTARG});;
+        w) DIRS2WRITE+=(${OPTARG});;
+        e) EMPTYCHECK=1;;
+        v) VERBOSELVL=1;;
+        d) DEBUG=1;;
+      esac
+    done
+    if [ ${#DIRS2READ[@]} -gt 0 ]; then
+      DIRS2CHECK[0]=${DIRS2READ[@]}
+    fi
+    if [ ${#DIRS2WRITE[@]} -gt 0 ]; then
+      DIRS2CHECK[1]=${DIRS2WRITE[@]}
+    fi
+    TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
+    if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
+      echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
+      echo -e "         -r Read permission check (for quoted paths)"
+      echo -e "         -w Write permission check (for quoted paths)"
+      echo -e "         -e Empty checks (additional errors if empty)"
+      echo -e "         -v Verbose mode (providing more feedback)"
+      exit 1;
+    fi
+  }
 
 
 # FUNCTION DEFINITION:
 
-  function checkInput() {
-    if [ ${#DIRS2CHK[@]} -ge 1 ]
-      then
-        echo -e "Checking directory permissions..."
-      else
-        echo -e "${EMCOL}NOTHING TO CHECK$RCOL: Please supply at least one directory as an argument:"
-        echo -e "For example: #$ dirp /path/directoryToCheck"
-        exit 1;
+  function reportOK() {
+    DIRSOK=$((DIRSOK + 1))
+    if [ ${VERBOSELVL} -ge 1 ]; then
+      echo -e "${OKCOL}[\u2713]$RCOL ${1}"
     fi
   }
-  function chkDir() {
-    MYPERM=0
-    test -r $1 && MYPERM=$((MYPERM + 4))
-    test -w $1 && MYPERM=$((MYPERM + 2))
-    test -x $1 && MYPERM=$((MYPERM + 1))
-    if [ ${MYPERM} -ge ${CRITLVL} ]
-      then
-        echo -e "${OKCOL}[x]$RCOL $1"
-        DIRSOK=$((DIRSOK + 1))
-      else
-        echo -e "${NOKCOL}[!]$RCOL $1"
+
+  function reportNOK() {
+    ERRORS+=("${1} verified NOK: ${2}")
+    echo -e "${NOKCOL}[${REPORTCHAR}]$RCOL ${1} ${2}"
+  }
+
+  function checkIfEmpty {
+    if [ ! "$(ls -A ${1})"  ]; then
+      REPORTCHAR="e"
+      reportNOK ${1} "(empty)"
+    else
+      reportOK ${1}
     fi
   }
-  function resultHandler() {
-    if [ ${DIRSOK} ==  ${#DIRS2CHK[@]} ]
-      then
-        echo -e "${EMCOL}PASSED${RCOL}: All dirs meet perm level ${CRITLVL}."
-        exit 0;
-      else
-        echo -e "${EMCOL}FAILED${RCOL}: One or more dirs did NOT meet perm level ${CRITLVL}!"
-        exit 1;
+
+  function checkPerm {
+    for permType in ${!DIRS2CHECK[@]} 
+    do
+      case ${permType} in
+        0)
+          requirement="read"
+          REPORTCHAR="r"
+        ;;
+        1)
+          requirement="write"
+          REPORTCHAR="w"
+        ;;
+      esac
+      if [ ${VERBOSELVL} -ge 1 ]; then
+        echo -e "${requirement^^}..."
+      fi
+      for directory in ${DIRS2CHECK[${permType}]}
+      do
+        directory=$(readlink -f ${directory})
+        case ${requirement} in
+          read)
+            if [ ! -d "${directory}" ]; then
+              REPORTCHAR="d"
+              reportNOK ${directory} "(not a directory)"
+            else
+              if [ -r "${directory}" ]; then
+                if [ ${EMPTYCHECK} -eq 1 ]; then
+                  checkIfEmpty ${directory}
+                else
+                  reportOK ${directory}
+                fi
+              else
+                reportNOK ${directory}
+              fi
+            fi
+          ;;
+          write)
+            if [ ! -d "${directory}" ]; then
+              REPORTCHAR="d"
+              reportNOK ${directory} "(not a directory)"
+            else
+              if [ -w "${directory}" ]; then
+                if [ ${EMPTYCHECK} -eq 1 ]; then
+                  checkIfEmpty ${directory}
+                else
+                  reportOK ${directory}
+                fi                
+              else
+                reportNOK ${directory}
+              fi
+            fi
+          ;;
+          *) reportNOK ${directory};;
+        esac
+      done
+    done
+  }
+
+  function resultHandler {
+    if [ ${DIRSOK} -eq ${TOTALNRDIRS2CHECK} ]; then
+      if [ ${VERBOSELVL} -ge 0 ]; then
+        echo -e "${EMCOL}PASSED${RCOL}: All directories verified OK!"
+      fi
+      exit 0
+    else
+      if [ ${VERBOSELVL} -ge 0 ]; then
+        echo -e "${EMCOL}FAILED${RCOL}: some directories verified NOK!"
+      fi
+      exit 1
+    fi
+   }
+
+  function debugReport {
+    if [ ${DEBUG} -eq "1" ]; then
+      echo -e "-----------------"
+      echo -e "DIRS OK:    ${DIRSOK}"
+      echo -e "ERRORS:     ${#ERRORS[@]}"
+      echo -e ""
+      echo -e "DIRS TOTAL: ${TOTALNRDIRS2CHECK}"
+      echo -e "-----------------"
     fi
   }
 
 
 # LOGIC EXECUTION:
 
-  checkInput
-  for i in ${DIRS2CHK[*]}; do
-    chkDir $i
-  done
+  getInput "$@"
+  checkPerm
+  debugReport
   resultHandler
-  exit 1;
