@@ -111,7 +111,7 @@
 if [ ${DEBUG} -ge 1 ]; then
   echo -e "dir: pre: ${directory}"
 fi
-        directory=$(readlink -f ${directory})
+        directory=$(readlink -m ${directory})
 if [ ${DEBUG} -ge 1 ]; then
   echo -e "dir: post: ${directory}"
 fi
