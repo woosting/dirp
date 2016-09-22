@@ -108,7 +108,13 @@
       fi
       for directory in ${DIRS2CHECK[${permType}]}
       do
-        directory=$(readlink -f ${directory})
+if [ ${DEBUG} -ge 1 ]; then
+  echo -e "dir: pre: ${directory}"
+fi
+        directory=$(readlink -m ${directory})
+if [ ${DEBUG} -ge 1 ]; then
+  echo -e "dir: post: ${directory}"
+fi
         case ${requirement} in
           read)
             if [ ! -d "${directory}" ]; then
@@ -180,3 +186,5 @@
   checkPerm
   debugReport
   resultHandler
+
+exit 1
