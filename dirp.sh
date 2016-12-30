@@ -27,7 +27,6 @@
   OKCOL='\033[0;32m' #OK color (default: GREEN)
   RCOL='\033[0m'    #RESET color (default: terminal default)
 
-
 # INITIALISATION:
 
   DIRSOK=0
@@ -36,9 +35,20 @@
   DEBUG=0
   REPORTCHAR="!"
 
+function printHelp () {
+    echo -e "CIMPORTS - Container IMPORTS (2016, GNU GENERAL PUBLIC LICENSE)\n"
+    echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]\n"
+    echo -e "Arguments:"
+    echo -e "   -r Read permission check (for provided quoted (!) paths)"
+    echo -e "   -w Write permission check (for provided quoted (!) paths)"
+    echo -e "   -e Empty-check mode (errors if a dir to r/w is empty)"
+    echo -e "   -v Verbose mode (provides more feedback)"
+    echo -e "   -h Prints this helptext."
+  }
+
   function getInput () {
-    local OPTIND r w e v d option
-    while getopts r:w:evd option
+    local OPTIND r w e v d h option
+    while getopts r:w:evdh option
     do
       case "${option}"
        in
@@ -47,6 +57,14 @@
         e) EMPTYCHECK=1;;
         v) VERBOSELVL=1;;
         d) DEBUG=1;;
+        h)
+           printHelp
+           exit 0
+        ;;
+        \?)
+           printHelp
+           exit 1
+        ;;
       esac
     done
     if [ ${#DIRS2READ[@]} -gt 0 ]; then
@@ -57,11 +75,7 @@
     fi
     TOTALNRDIRS2CHECK=$((${#DIRS2READ[@]}+${#DIRS2WRITE[@]}))
     if [ ${TOTALNRDIRS2CHECK} -eq 0 ]; then
-      echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]"
-      echo -e "         -r Read permission check (for provided quoted (!) paths)"
-      echo -e "         -w Write permission check (for provided quoted (!) paths)"
-      echo -e "         -e Empty-check mode (errors if a dir to r/w is empty)"
-      echo -e "         -v Verbose mode (provides more feedback)"
+      printHelp
       exit 1;
     fi
   }
