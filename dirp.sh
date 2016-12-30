@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# # DIRectory series Permission checker (DIRP)
+# # DIRectory Permission checker (DIRP)
 #
 # Copyright 2016 Willem Oosting
 #
@@ -36,7 +36,7 @@
   REPORTCHAR="!"
 
 function printHelp () {
-    echo -e "CIMPORTS - Container IMPORTS (2016, GNU GENERAL PUBLIC LICENSE)\n"
+    echo -e "DIRP - DIRectory Permission checker (2016, GNU GENERAL PUBLIC LICENSE)\n"
     echo -e "USAGE: dirp -r|w \"/path [/path2]\" [...] [-e] [-v]\n"
     echo -e "Arguments:"
     echo -e "   -r Read permission check (for provided quoted (!) paths)"
