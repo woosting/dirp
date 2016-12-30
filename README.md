@@ -1,4 +1,4 @@
-# DIRectory series Permission checker (DIRP)
+# DIRectory Permission checker (DIRP)
 
 Copyright 2016 Willem Oosting
 
